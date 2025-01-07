@@ -8,8 +8,12 @@ services:
       npm install
       npm run build
       cd ..
+      rm -rf dist
       mkdir -p dist
       cp -r client/dist/* dist/
+      ls -la dist/
+      echo "Contents of dist directory:"
+      find dist -type f
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
