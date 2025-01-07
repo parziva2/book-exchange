@@ -4,10 +4,10 @@ services:
     env: node
     buildCommand: |
       npm run build
-      echo "Build complete. Checking dist directory:"
-      ls -la dist/
-      echo "Detailed contents of dist directory:"
-      find dist -type f || echo "No files found in dist"
+      echo "Build complete. Checking client/dist directory:"
+      ls -la client/dist/
+      echo "Detailed contents of client/dist directory:"
+      find client/dist -type f || echo "No files found in client/dist"
     startCommand: node server.js
     envVars:
       - key: NODE_ENV

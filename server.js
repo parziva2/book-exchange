@@ -76,14 +76,15 @@ app.use('/api/chat', chatRoutes);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
-  console.log('Setting up static file serving from:', path.join(__dirname, 'dist'));
+  const clientBuildPath = path.join(__dirname, 'client/dist');
+  console.log('Setting up static file serving from:', clientBuildPath);
   
   // Serve static files
-  app.use(express.static(path.join(__dirname, 'dist')));
+  app.use(express.static(clientBuildPath));
   
   // Handle React routing
   app.get('*', (req, res, next) => {
-    const indexPath = path.join(__dirname, 'dist/index.html');
+    const indexPath = path.join(clientBuildPath, 'index.html');
     console.log('Attempting to serve:', indexPath);
     
     res.sendFile(indexPath, err => {
