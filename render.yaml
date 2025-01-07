@@ -3,17 +3,25 @@ services:
     name: book-exchange
     env: node
     buildCommand: |
+      echo "Installing server dependencies..."
       npm install
+      echo "Moving to client directory..."
       cd client
+      echo "Installing client dependencies..."
       npm install
+      echo "Building client..."
       npm run build
+      echo "Client build complete. Checking client/dist directory..."
+      ls -la dist/
       cd ..
+      echo "Moving build files..."
       rm -rf dist
       mkdir -p dist
-      cp -r client/dist/* dist/
+      cp -r client/dist/* dist/ || echo "Error copying files"
+      echo "Checking final dist directory..."
       ls -la dist/
-      echo "Contents of dist directory:"
-      find dist -type f
+      echo "Detailed contents of dist directory:"
+      find dist -type f || echo "No files found in dist"
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
