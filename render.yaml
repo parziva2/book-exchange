@@ -2,7 +2,10 @@ services:
   - type: web
     name: book-exchange
     env: node
-    buildCommand: npm install && cd client && npm install && npm run build && cd ..
+    buildCommand: |
+      npm install
+      cd client && npm install && npm run build && cd ..
+      mkdir -p client/build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV

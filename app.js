@@ -7,6 +7,9 @@ const chatRoutes = require('./routes/chat');
 
 const app = express();
 
+// Enable trust proxy
+app.set('trust proxy', 1);
+
 app.use(cors());
 app.use(express.json());
 
