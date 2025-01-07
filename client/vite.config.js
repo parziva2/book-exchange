@@ -9,7 +9,7 @@ export default defineConfig({
   },
   define: {
     'process.env.VITE_API_URL': JSON.stringify(process.env.NODE_ENV === 'production' 
-      ? 'https://book-exchange-api.onrender.com'
+      ? 'https://book-exchange-api-vmg5.onrender.com'
       : 'http://localhost:3000')
   }
 }); 
