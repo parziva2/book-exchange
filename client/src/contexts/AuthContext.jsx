@@ -4,7 +4,9 @@ import axios from 'axios';
 const AuthContext = createContext(null);
 
 // Configure axios defaults
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NODE_ENV === 'production'
+  ? 'https://book-exchange-api-vmg5.onrender.com'
+  : 'http://localhost:3000';
 console.log('API URL:', API_URL);
 axios.defaults.baseURL = API_URL;
 
