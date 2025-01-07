@@ -4,8 +4,10 @@ services:
     env: node
     buildCommand: |
       npm install
-      cd client && npm install && npm run build && cd ..
-      mkdir -p client/build
+      cd client
+      npm install
+      npm run build
+      cd ..
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
