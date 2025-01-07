@@ -10,6 +10,7 @@ import {
   CardContent,
   CardMedia,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import {
   School,
@@ -56,7 +57,65 @@ const features = [
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // Features Section Component
+  const FeaturesSection = () => (
+    <Container maxWidth="lg" sx={{ mb: 8 }}>
+      <Typography
+        component="h2"
+        variant="h3"
+        align="center"
+        sx={{ mb: 6 }}
+      >
+        Platform Features
+      </Typography>
+      <Grid container spacing={4}>
+        {features.map((feature, index) => (
+          <Grid item xs={12} sm={6} md={4} key={index}>
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                p: 2,
+              }}
+              elevation={2}
+            >
+              <Box
+                sx={{
+                  bgcolor: 'primary.light',
+                  borderRadius: '50%',
+                  p: 2,
+                  mb: 2,
+                }}
+              >
+                {feature.icon}
+              </Box>
+              <CardContent>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="h3"
+                  align="center"
+                >
+                  {feature.title}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  align="center"
+                >
+                  {feature.description}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  );
 
   return (
     <Box>
@@ -90,7 +149,9 @@ const Home = () => {
             justifyContent="center"
             sx={{ mt: 4 }}
           >
-            {!user && (
+            {loading ? (
+              <CircularProgress />
+            ) : !user ? (
               <>
                 <Button
                   variant="contained"
@@ -109,8 +170,7 @@ const Home = () => {
                   Sign In
                 </Button>
               </>
-            )}
-            {user && (
+            ) : (
               <Button
                 variant="contained"
                 color="secondary"
@@ -124,83 +184,30 @@ const Home = () => {
         </Container>
       </Box>
 
-      {/* Features Section */}
-      <Container maxWidth="lg" sx={{ mb: 8 }}>
-        <Typography
-          component="h2"
-          variant="h3"
-          align="center"
-          sx={{ mb: 6 }}
-        >
-          Platform Features
-        </Typography>
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  p: 2,
-                }}
-                elevation={2}
-              >
-                <Box
-                  sx={{
-                    bgcolor: 'primary.light',
-                    borderRadius: '50%',
-                    p: 2,
-                    mb: 2,
-                  }}
-                >
-                  {feature.icon}
-                </Box>
-                <CardContent>
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    component="h3"
-                    align="center"
-                  >
-                    {feature.title}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    align="center"
-                  >
-                    {feature.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+      {/* Features Section - Always visible */}
+      <FeaturesSection />
 
-      {/* Call to Action */}
-      <Box sx={{ bgcolor: 'secondary.light', py: 8 }}>
-        <Container maxWidth="md">
-          <Typography
-            variant="h4"
-            align="center"
-            color="text.primary"
-            gutterBottom
-          >
-            Ready to Start Learning?
-          </Typography>
-          <Typography
-            variant="h6"
-            align="center"
-            color="text.secondary"
-            paragraph
-          >
-            Join our community of learners and experts today.
-            Share your knowledge and learn from others.
-          </Typography>
-          {!user && (
+      {/* Call to Action - Only show if not logged in */}
+      {!loading && !user && (
+        <Box sx={{ bgcolor: 'secondary.light', py: 8 }}>
+          <Container maxWidth="md">
+            <Typography
+              variant="h4"
+              align="center"
+              color="text.primary"
+              gutterBottom
+            >
+              Ready to Start Learning?
+            </Typography>
+            <Typography
+              variant="h6"
+              align="center"
+              color="text.secondary"
+              paragraph
+            >
+              Join our community of learners and experts today.
+              Share your knowledge and learn from others.
+            </Typography>
             <Box sx={{ textAlign: 'center', mt: 4 }}>
               <Button
                 variant="contained"
@@ -211,9 +218,9 @@ const Home = () => {
                 Join Now
               </Button>
             </Box>
-          )}
-        </Container>
-      </Box>
+          </Container>
+        </Box>
+      )}
     </Box>
   );
 };
