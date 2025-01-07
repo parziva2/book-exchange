@@ -33,6 +33,13 @@ const io = process.env.NODE_ENV !== 'test'
 
 // Middleware
 app.use(compression());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.CLIENT_URL 
@@ -69,12 +76,22 @@ app.use('/api/chat', chatRoutes);
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
+  console.log('Setting up static file serving from:', path.join(__dirname, 'dist'));
+  
   // Serve static files
   app.use(express.static(path.join(__dirname, 'dist')));
   
   // Handle React routing
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist/index.html'));
+  app.get('*', (req, res, next) => {
+    const indexPath = path.join(__dirname, 'dist/index.html');
+    console.log('Attempting to serve:', indexPath);
+    
+    res.sendFile(indexPath, err => {
+      if (err) {
+        console.error('Error serving index.html:', err);
+        next(err);
+      }
+    });
   });
 }
 
@@ -142,11 +159,18 @@ if (process.env.NODE_ENV !== 'test' && io) {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: process.env.NODE_ENV === 'production' 
-    ? 'Something went wrong!' 
-    : err.message 
-  });
+  console.error('Error:', err);
+  
+  // Send detailed error in development, generic in production
+  const error = process.env.NODE_ENV === 'production'
+    ? { error: 'Something went wrong!' }
+    : { 
+        error: err.message,
+        stack: err.stack,
+        details: err
+      };
+  
+  res.status(err.status || 500).json(error);
 });
 
 // Start server only if not in test environment
