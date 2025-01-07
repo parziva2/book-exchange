@@ -9,7 +9,8 @@
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "build": "npm install && cd client && npm install && npm run build"
+    "build:client": "cd client && npm install && npm run build",
+    "build": "npm install && npm run build:client && mkdir -p dist && cp -r client/dist/* dist/"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
