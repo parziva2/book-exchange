@@ -41,9 +41,10 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CLIENT_URL 
-    : 'http://localhost:3000'
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://book-exchange-client.onrender.com', process.env.CLIENT_URL].filter(Boolean)
+    : 'http://localhost:3000',
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -74,27 +75,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.join(__dirname, 'client/dist');
-  console.log('Setting up static file serving from:', clientBuildPath);
-  
-  // Serve static files
-  app.use(express.static(clientBuildPath));
-  
-  // Handle React routing
-  app.get('*', (req, res, next) => {
-    const indexPath = path.join(clientBuildPath, 'index.html');
-    console.log('Attempting to serve:', indexPath);
-    
-    res.sendFile(indexPath, err => {
-      if (err) {
-        console.error('Error serving index.html:', err);
-        next(err);
-      }
-    });
-  });
-}
+// Add a simple health check endpoint
+app.get('/', (req, res) => {
+  res.json({ status: 'API is running' });
+});
 
 // Socket.IO setup only if not in test environment
 if (process.env.NODE_ENV !== 'test' && io) {
