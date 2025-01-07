@@ -70,11 +70,11 @@ app.use('/api/chat', chatRoutes);
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   // Serve static files
-  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.use(express.static(path.join(__dirname, 'client/dist')));
   
   // Handle React routing
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'client/dist', 'index.html'));
   });
 }
 
