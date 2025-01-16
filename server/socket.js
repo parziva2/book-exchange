@@ -9,7 +9,13 @@ const initializeSocket = (server) => {
   
   io = socketIO(server, {
     cors: {
-      origin: [process.env.CLIENT_URL || 'http://localhost:5173', 'http://localhost:3000'],
+      origin: [
+        process.env.CLIENT_URL || 'http://localhost:5173',
+        'http://localhost:3000',
+        'https://www.swapexpertise.com',
+        'https://swapexpertise.com',
+        'https://book-exchange-clien.onrender.com'
+      ],
       methods: ['GET', 'POST'],
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization']
