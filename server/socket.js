@@ -9,16 +9,37 @@ const initializeSocket = (server) => {
   
   io = socketIO(server, {
     cors: {
-      origin: [
-        process.env.CLIENT_URL || 'http://localhost:5173',
-        'http://localhost:3000',
-        'https://www.swapexpertise.com',
-        'https://swapexpertise.com',
-        'https://book-exchange-clien.onrender.com'
-      ],
-      methods: ['GET', 'POST'],
+      origin: function(origin, callback) {
+        const allowedOrigins = [
+          'http://localhost:5173',
+          'http://localhost:3000',
+          'http://localhost:5174',
+          'https://www.swapexpertise.com',
+          'https://swapexpertise.com',
+          'https://book-exchange-clien.onrender.com',
+          'https://book-exchange-api-vmg5.onrender.com'
+        ];
+        
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('swapexpertise.com')) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
       credentials: true,
-      allowedHeaders: ['Content-Type', 'Authorization']
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+        'Access-Control-Request-Method',
+        'Access-Control-Request-Headers'
+      ]
     },
     path: '/socket.io',
     transports: ['websocket', 'polling'],
