@@ -63,7 +63,8 @@ app.use(cors({
     'http://localhost:5174',
     'https://www.swapexpertise.com',
     'https://swapexpertise.com',
-    'https://book-exchange-clien.onrender.com'
+    'https://book-exchange-clien.onrender.com',
+    'https://book-exchange-api-vmg5.onrender.com'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
