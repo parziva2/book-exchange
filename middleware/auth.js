@@ -1,27 +1,80 @@
 const jwt = require('jsonwebtoken');
+const { withRetry } = require('../utils/mongoRetry');
+const User = require('../models/User');
 
-module.exports = (req, res, next) => {
+/**
+ * Authentication middleware
+ * Verifies JWT token and attaches user to request
+ */
+module.exports = async (req, res, next) => {
   try {
     // Get token from header
-    const authHeader = req.header('Authorization');
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Please authenticate' });
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+
+    // Check if no token
+    if (!token) {
+      return res.status(401).json({ 
+        status: 'error',
+        message: 'No authentication token, access denied',
+        code: 'AUTH_NO_TOKEN'
+      });
     }
 
-    // Check if it's a Bearer token
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      return res.status(401).json({ error: 'Invalid token format' });
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Get user from database with retry
+      const user = await withRetry(async () => {
+        const user = await User.findById(decoded.userId)
+          .select('-password')
+          .lean();
+        
+        if (!user) {
+          throw new Error('User not found');
+        }
+        
+        return user;
+      });
+
+      // Add user and token to request
+      req.user = user;
+      req.token = token;
+
+      next();
+    } catch (err) {
+      if (err.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Invalid authentication token',
+          code: 'AUTH_INVALID_TOKEN'
+        });
+      }
+      
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Authentication token expired',
+          code: 'AUTH_TOKEN_EXPIRED'
+        });
+      }
+
+      if (err.message === 'User not found') {
+        return res.status(401).json({
+          status: 'error',
+          message: 'User no longer exists',
+          code: 'AUTH_USER_NOT_FOUND'
+        });
+      }
+
+      throw err;
     }
-
-    const token = parts[1];
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'test-secret');
-    req.user = decoded;
-    next();
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(401).json({ error: 'Please authenticate' });
+  } catch (err) {
+    console.error('Auth middleware error:', err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error during authentication',
+      code: 'AUTH_INTERNAL_ERROR'
+    });
   }
 }; 

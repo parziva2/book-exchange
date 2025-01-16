@@ -1,106 +1,77 @@
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 
-// Create a new message
-exports.createMessage = async (req, res) => {
-  try {
-    const { conversationId, content } = req.body;
-    
-    if (!conversationId) {
-      return res.status(400).json({ error: 'Conversation ID is required' });
-    }
-
-    const conversation = await Conversation.findById(conversationId);
-    if (!conversation) {
-      return res.status(404).json({ error: 'Conversation not found' });
-    }
-
-    // Check if user is a participant
-    if (!conversation.participants.includes(req.user.userId)) {
-      return res.status(403).json({ error: 'Not authorized to send messages in this conversation' });
-    }
-
-    const message = await Message.create({
-      conversation: conversationId,
-      sender: req.user.userId,
-      content
-    });
-
-    await message.populate('sender');
-    res.status(201).json(message);
-  } catch (error) {
-    console.error('Create message error:', error);
-    res.status(500).json({ error: 'Error creating message' });
-  }
-};
-
-// Get conversation messages
-exports.getMessages = async (req, res) => {
-  try {
-    const { conversationId } = req.params;
-    const conversation = await Conversation.findById(conversationId);
-    
-    if (!conversation) {
-      return res.status(404).json({ error: 'Conversation not found' });
-    }
-
-    if (!conversation.participants.includes(req.user.userId)) {
-      return res.status(403).json({ error: 'Not authorized to view these messages' });
-    }
-
-    const messages = await Message.find({ conversation: conversationId })
-      .populate('sender')
-      .sort({ createdAt: -1 });
-
-    res.json(messages);
-  } catch (error) {
-    console.error('Get messages error:', error);
-    res.status(500).json({ error: 'Error getting messages' });
-  }
-};
-
-// Get user conversations
+// Get all conversations for a user
 exports.getConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
-      participants: req.user.userId
-    }).populate('participants lastMessage');
+      participants: req.user.id,
+    }).populate('participants', 'username profile.image');
 
     res.json(conversations);
   } catch (error) {
-    console.error('Get conversations error:', error);
-    res.status(500).json({ error: 'Error getting conversations' });
+    console.error('Error getting conversations:', error);
+    res.status(500).json({ message: 'Error getting conversations' });
   }
 };
 
-// Create a new conversation
-exports.createConversation = async (req, res) => {
+// Get messages for a conversation
+exports.getMessages = async (req, res) => {
   try {
-    const { participantId } = req.body;
-    
-    if (!participantId) {
-      return res.status(400).json({ error: 'Participant ID is required' });
+    const conversation = await Conversation.findById(req.params.id);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
     }
 
-    // Check if conversation already exists
-    const existingConversation = await Conversation.findOne({
-      participants: { $all: [req.user.userId, participantId] },
-      type: 'direct'
-    });
-
-    if (existingConversation) {
-      return res.json(existingConversation);
+    // Check if user is a participant
+    if (!conversation.participants.includes(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized' });
     }
 
-    const conversation = await Conversation.create({
-      participants: [req.user.userId, participantId],
-      type: 'direct'
-    });
+    const messages = await Message.find({
+      conversation: req.params.id,
+    }).populate('sender', 'username profile.image');
 
-    await conversation.populate('participants');
-    res.status(201).json(conversation);
+    res.json(messages);
   } catch (error) {
-    console.error('Create conversation error:', error);
-    res.status(500).json({ error: 'Error creating conversation' });
+    console.error('Error getting messages:', error);
+    res.status(500).json({ message: 'Error getting messages' });
+  }
+};
+
+// Send a message
+exports.sendMessage = async (req, res) => {
+  try {
+    const { conversationId, content } = req.body;
+
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
+    }
+
+    // Check if user is a participant
+    if (!conversation.participants.includes(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const message = new Message({
+      conversation: conversationId,
+      sender: req.user.id,
+      content,
+    });
+
+    await message.save();
+
+    // Update conversation's last message
+    conversation.lastMessage = message._id;
+    await conversation.save();
+
+    const populatedMessage = await Message.findById(message._id)
+      .populate('sender', 'username profile.image');
+
+    res.status(201).json(populatedMessage);
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).json({ message: 'Error sending message' });
   }
 }; 

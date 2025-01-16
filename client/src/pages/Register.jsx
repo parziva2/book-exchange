@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -9,21 +9,45 @@ import {
   Link,
   Alert,
   Paper,
-  Grid,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
+  const { register, error: authError } = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
+    firstName: '',
+    lastName: '',
     password: '',
     confirmPassword: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { register } = useAuth();
+
+  const validateForm = () => {
+    if (!formData.email || !formData.firstName || !formData.lastName || !formData.password || !formData.confirmPassword) {
+      setError('All fields are required');
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,104 +55,124 @@ const Register = () => {
       ...prev,
       [name]: value,
     }));
+    // Clear errors when user starts typing
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      return setError('Passwords do not match');
-    }
-
-    if (formData.password.length < 6) {
-      return setError('Password must be at least 6 characters');
+    
+    if (!validateForm()) {
+      return;
     }
 
     try {
       setError('');
       setLoading(true);
-      await register(formData.username, formData.email, formData.password);
-      navigate('/profile');
+      await register({
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password,
+      });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create account');
+      console.error('Registration error:', err);
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message.includes('already exists')) {
+        setError('This email is already registered. Please try a different one.');
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError('Failed to create an account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-            Create Your Account
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '80vh',
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom align="center">
+            Create Account
           </Typography>
 
-          {error && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-              {error}
+          {(error || authError) && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error || authError}
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="username"
-                  label="Username"
-                  name="username"
-                  autoComplete="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  helperText="Password must be at least 6 characters"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="confirmPassword"
-                  label="Confirm Password"
-                  type="password"
-                  id="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </Grid>
-            </Grid>
+          <Box component="form" onSubmit={handleSubmit}>
+            <TextField
+              fullWidth
+              label="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              margin="normal"
+              required
+              autoFocus
+              error={!!error && !formData.firstName}
+              helperText={!!error && !formData.firstName ? 'First name is required' : ''}
+            />
+            <TextField
+              fullWidth
+              label="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              margin="normal"
+              required
+              error={!!error && !formData.lastName}
+              helperText={!!error && !formData.lastName ? 'Last name is required' : ''}
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              margin="normal"
+              required
+              error={!!error && !formData.email}
+              helperText={!!error && !formData.email ? 'Email is required' : ''}
+            />
+            <TextField
+              fullWidth
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              margin="normal"
+              required
+              error={!!error && (!formData.password || formData.password.length < 6)}
+              helperText={!!error && (!formData.password ? 'Password is required' : formData.password.length < 6 ? 'Password must be at least 6 characters' : '')}
+            />
+            <TextField
+              fullWidth
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              margin="normal"
+              required
+              error={!!error && formData.password !== formData.confirmPassword}
+              helperText={!!error && formData.password !== formData.confirmPassword ? 'Passwords do not match' : ''}
+            />
             <Button
               type="submit"
               fullWidth
@@ -136,17 +180,21 @@ const Register = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Sign Up'}
+              {loading ? 'Creating Account...' : 'Register'}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
-              <Link component={RouterLink} to="/login" variant="body2">
-                Already have an account? Sign in
-              </Link>
-            </Box>
           </Box>
-        </Box>
-      </Paper>
-    </Container>
+
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2">
+              Already have an account?{' '}
+              <Link component={RouterLink} to="/login">
+                Sign in
+              </Link>
+            </Typography>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

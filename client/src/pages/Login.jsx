@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -13,48 +13,63 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login, error: authError } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { login } = useAuth();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
       setLoading(true);
-      await login(email, password);
-      navigate('/search');
+      await login(formData.email, formData.password);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to login');
+      console.error('Login error:', err);
+      setError(err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-            Welcome Back
-          </Typography>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 128px)', // Adjust for header and footer
+        backgroundColor: '#f5f5f5',
+        py: 4
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Typography component="h1" variant="h4" align="center" gutterBottom>
+              Welcome Back
+            </Typography>
+            <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 3 }}>
+              Sign in to your account
+            </Typography>
 
-          {error && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+            {(error || authError) && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error || authError}
+              </Alert>
+            )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField
               margin="normal"
               required
@@ -64,9 +79,11 @@ const Login = () => {
               name="email"
               autoComplete="email"
               autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
+              disabled={loading}
             />
+
             <TextField
               margin="normal"
               required
@@ -76,27 +93,31 @@ const Login = () => {
               type="password"
               id="password"
               autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
+              disabled={loading}
             />
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
+              size="large"
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
+
             <Box sx={{ textAlign: 'center' }}>
               <Link component={RouterLink} to="/register" variant="body2">
                 Don't have an account? Sign Up
               </Link>
             </Box>
           </Box>
-        </Box>
-      </Paper>
-    </Container>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

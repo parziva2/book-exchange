@@ -1,10 +1,11 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -12,14 +13,14 @@ const PrivateRoute = ({ children }) => {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        minHeight="100vh"
+        minHeight="200px"
       >
         <CircularProgress />
       </Box>
     );
   }
 
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default PrivateRoute; 

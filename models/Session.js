@@ -11,108 +11,87 @@ const sessionSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  topic: {
-    type: String,
-    required: true
-  },
-  scheduledDate: {
+  startTime: {
     type: Date,
     required: true
   },
   duration: {
     type: Number,
     required: true,
-    min: 15,
-    max: 120
+    default: 60 // minutes
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'completed', 'cancelled'],
+    enum: ['pending', 'confirmed', 'completed', 'cancelled', 'scheduled', 'in_progress'],
     default: 'pending'
+  },
+  topic: {
+    type: String,
+    required: true
+  },
+  note: {
+    type: String
   },
   price: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
   },
-  notes: String,
-  meetingDetails: {
-    roomName: String,
-    recordingUrl: String
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'completed', 'refunded'],
+    default: 'pending'
   },
-  feedback: {
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5
-    },
-    comment: String,
-    givenAt: Date
+  twilioRoomId: {
+    type: String,
+    unique: true,
+    sparse: true
   },
-  messages: [{
-    sender: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    },
-    content: {
-      type: String,
-      required: true
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now
-    }
+  twilioRoomStatus: {
+    type: String,
+    enum: ['created', 'in_progress', 'completed', 'failed'],
+    default: 'created'
+  },
+  participantTokens: {
+    mentor: String,
+    mentee: String
+  },
+  meetingUrl: {
+    type: String
+  },
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  review: {
+    type: String
+  },
+  cancelReason: {
+    type: String
+  },
+  cancelledBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  calendarEventId: {
+    type: String
+  },
+  remindersSent: [{
+    type: String,
+    enum: ['24h', '1h', '15min'],
+    default: []
   }],
   createdAt: {
     type: Date,
     default: Date.now
   }
-}, {
-  timestamps: true
 });
 
-// Middleware to update user ratings when feedback is added
-sessionSchema.pre('save', async function(next) {
-  if (this.isModified('feedback') && this.feedback.rating) {
-    try {
-      const User = mongoose.model('User');
-      const mentor = await User.findById(this.mentor);
-      
-      const sessions = await this.constructor.find({
-        mentor: this.mentor,
-        'feedback.rating': { $exists: true }
-      });
-      
-      const totalRatings = sessions.length;
-      const averageRating = sessions.reduce((acc, session) => 
-        acc + session.feedback.rating, 0) / totalRatings;
-      
-      mentor.ratings = {
-        average: averageRating,
-        count: totalRatings
-      };
-      
-      await mentor.save();
-    } catch (error) {
-      next(error);
-    }
-  }
-  next();
-});
+// Add indexes for common queries
+sessionSchema.index({ mentor: 1, startTime: 1 });
+sessionSchema.index({ mentee: 1, startTime: 1 });
+sessionSchema.index({ status: 1 });
+sessionSchema.index({ twilioRoomId: 1 });
 
-// Virtual for checking if the session is upcoming
-sessionSchema.virtual('isUpcoming').get(function() {
-  return new Date(this.scheduledDate) > new Date();
-});
-
-// Virtual for checking if the session can be joined (within 15 minutes of scheduled time)
-sessionSchema.virtual('canJoin').get(function() {
-  const now = new Date();
-  const sessionTime = new Date(this.scheduledDate);
-  const timeDiff = Math.abs(now - sessionTime);
-  return timeDiff <= 15 * 60 * 1000 && this.status === 'confirmed'; // 15 minutes in milliseconds
-});
-
-const Session = mongoose.model('Session', sessionSchema);
-
-module.exports = Session; 
+module.exports = mongoose.model('Session', sessionSchema); 

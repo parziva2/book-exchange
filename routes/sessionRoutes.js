@@ -3,13 +3,16 @@ const router = express.Router();
 const sessionController = require('../controllers/sessionController');
 const auth = require('../middleware/auth');
 
-// All routes require authentication
-router.use(auth);
-
 // Session routes
-router.post('/', sessionController.createSession);
-router.get('/', sessionController.getUserSessions);
-router.patch('/:id/status', sessionController.updateSessionStatus);
-router.post('/:id/feedback', sessionController.addFeedback);
+router.get('/', auth, sessionController.getUserSessions);
+router.post('/', auth, sessionController.createSession);
+router.get('/:id', auth, sessionController.getSession);
+router.put('/:id/status', auth, sessionController.updateSessionStatus);
+router.post('/:id/cancel', auth, sessionController.cancelSession);
+
+// Video session routes
+router.post('/:id/token', auth, sessionController.getVideoToken);
+router.post('/:id/join', auth, sessionController.joinVideoSession);
+router.post('/:id/end', auth, sessionController.endVideoSession);
 
 module.exports = router; 

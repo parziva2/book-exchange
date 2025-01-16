@@ -4,33 +4,23 @@ const messageSchema = new mongoose.Schema({
   conversation: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Conversation',
-    required: true
+    required: true,
   },
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   content: {
     type: String,
-    required: true
+    required: true,
   },
-  readBy: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-messageSchema.post('save', async function(doc) {
-  // Update the conversation's lastMessage
-  await mongoose.model('Conversation').findByIdAndUpdate(
-    doc.conversation,
-    { lastMessage: doc._id, updatedAt: Date.now() }
-  );
+  read: {
+    type: Boolean,
+    default: false,
+  },
+}, {
+  timestamps: true,
 });
 
 const Message = mongoose.model('Message', messageSchema);

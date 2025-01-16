@@ -79,29 +79,122 @@ exports.login = async (req, res) => {
 // Get user profile
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const userId = req.user.id;
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     res.json(user);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error fetching profile:', error);
+    res.status(500).json({ message: 'Error fetching profile' });
   }
 };
 
 // Update user profile
 exports.updateProfile = async (req, res) => {
-  const updates = Object.keys(req.body);
-  const allowedUpdates = ['username', 'bio', 'expertise', 'interests', 'availability'];
-  const isValidOperation = updates.every(update => allowedUpdates.includes(update));
-
-  if (!isValidOperation) {
-    return res.status(400).json({ message: 'Invalid updates' });
-  }
-
   try {
-    updates.forEach(update => req.user[update] = req.body[update]);
-    await req.user.save();
-    res.json(req.user);
+    const userId = req.user.id;
+    const {
+      username,
+      bio,
+      expertise,
+      availability,
+      interests,
+      socialLinks,
+      contactInfo,
+      education,
+      experience,
+      languages
+    } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check username uniqueness if it's being updated
+    if (username && username !== user.username) {
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+      user.username = username;
+    }
+
+    // Update basic profile fields
+    if (bio) user.bio = bio;
+    if (expertise) user.expertise = expertise;
+    if (availability) user.availability = availability;
+    if (interests) user.interests = interests;
+
+    // Update social links
+    if (socialLinks) {
+      user.socialLinks = {
+        ...user.socialLinks,
+        ...socialLinks
+      };
+    }
+
+    // Update contact info
+    if (contactInfo) {
+      user.contactInfo = {
+        ...user.contactInfo,
+        ...contactInfo
+      };
+    }
+
+    // Update education
+    if (education) {
+      // Validate education entries
+      education.forEach(entry => {
+        if (!entry.institution || !entry.degree || !entry.field || !entry.startDate) {
+          throw new Error('Invalid education entry. Missing required fields.');
+        }
+      });
+      user.education = education;
+    }
+
+    // Update experience
+    if (experience) {
+      // Validate experience entries
+      experience.forEach(entry => {
+        if (!entry.company || !entry.position || !entry.startDate) {
+          throw new Error('Invalid experience entry. Missing required fields.');
+        }
+      });
+      user.experience = experience;
+    }
+
+    // Update languages
+    if (languages) {
+      // Validate language entries
+      languages.forEach(entry => {
+        if (!entry.language || !entry.proficiency) {
+          throw new Error('Invalid language entry. Missing required fields.');
+        }
+      });
+      user.languages = languages;
+    }
+
+    await user.save();
+
+    // Calculate profile completion
+    const completionPercentage = user.getProfileCompletionPercentage();
+
+    // Return user without password
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({
+      ...userResponse,
+      profileCompletion: completionPercentage
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: error.message || 'Error updating profile' });
   }
 };
 

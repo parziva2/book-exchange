@@ -1,19 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const chatController = require('../controllers/chatController');
 const { messageRateLimit } = require('../middleware/rateLimiter');
+const chatController = require('../controllers/chatController');
 
-// Create a new message
-router.post('/messages', auth, messageRateLimit, chatController.createMessage);
-
-// Get conversation messages
-router.get('/conversations/:conversationId/messages', auth, chatController.getMessages);
-
-// Get user conversations
+// Get all conversations for a user
 router.get('/conversations', auth, chatController.getConversations);
 
-// Create a new conversation
-router.post('/conversations', auth, chatController.createConversation);
+// Get messages for a conversation
+router.get('/conversations/:id', auth, chatController.getMessages);
+
+// Send a message
+router.post('/messages', auth, messageRateLimit, chatController.sendMessage);
 
 module.exports = router; 

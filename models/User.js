@@ -6,8 +6,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    minlength: 3
+    trim: true
   },
   email: {
     type: String,
@@ -21,67 +20,76 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
-  role: {
-    type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
-  },
-  isVerified: {
+  isMentor: {
     type: Boolean,
     default: false
   },
-  profile: {
-    bio: String,
-    languages: [String]
+  roles: {
+    type: [String],
+    default: ['user']
   },
-  expertise: [{
-    topic: String,
-    level: {
-      type: String,
-      enum: ['beginner', 'intermediate', 'expert']
-    },
-    hourlyRate: Number
-  }],
-  availability: [{
-    day: {
-      type: String,
-      enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    },
-    startTime: String,
-    endTime: String
-  }],
-  credits: {
+  bio: {
+    type: String,
+    default: ''
+  },
+  expertise: {
+    type: [String],
+    default: []
+  },
+  hourlyRate: {
     type: Number,
     default: 0
   },
-  ratings: {
-    average: {
-      type: Number,
-      default: 0
-    },
-    count: {
-      type: Number,
-      default: 0
-    }
+  experience: {
+    type: String,
+    default: ''
   },
-  lastActive: {
-    type: Date
-  }
+  education: {
+    type: String,
+    default: ''
+  },
+  availability: {
+    type: String,
+    default: ''
+  },
+  languages: {
+    type: [String],
+    default: []
+  },
+  mentorSince: {
+    type: Date,
+    default: null
+  },
+  rating: {
+    type: Number,
+    default: 0
+  },
+  profileCompleted: {
+    type: Boolean,
+    default: false
+  },
+  avatar: {
+    type: String,
+    default: ''
+  },
+  balance: {
+    type: Number,
+    default: 0
+  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 }, {
-  timestamps: true,
-  toJSON: {
-    transform: function(doc, ret) {
-      delete ret.password;
-      return ret;
-    }
-  }
+  timestamps: true
 });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
   try {
+    // Only hash the password if it has been modified (or is new)
+    if (!this.isModified('password')) {
+      return next();
+    }
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
@@ -90,7 +98,7 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Compare password method
+// Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
@@ -99,11 +107,10 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   }
 };
 
-// Update lastActive timestamp
-userSchema.methods.updateLastActive = function() {
-  this.lastActive = new Date();
-  return this.save();
-};
+// Create indexes
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ isMentor: 1 });
+userSchema.index({ roles: 1 });
 
 const User = mongoose.model('User', userSchema);
 

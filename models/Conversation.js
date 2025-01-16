@@ -4,30 +4,25 @@ const conversationSchema = new mongoose.Schema({
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   }],
+  lastMessage: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message',
+  },
   type: {
     type: String,
     enum: ['direct', 'group'],
-    default: 'direct'
+    default: 'direct',
   },
-  lastMessage: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message'
+  name: {
+    type: String,
+    required: function() {
+      return this.type === 'group';
+    },
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-conversationSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
+}, {
+  timestamps: true,
 });
 
 const Conversation = mongoose.model('Conversation', conversationSchema);

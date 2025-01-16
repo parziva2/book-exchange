@@ -1,227 +1,153 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Button,
   Container,
-  Grid,
   Typography,
-  Card,
-  CardContent,
-  CardMedia,
+  Button,
+  Box,
+  Grid,
   Stack,
-  CircularProgress,
+  Card,
+  CardContent
 } from '@mui/material';
 import {
-  School,
-  Psychology,
-  CreditScore,
-  StarBorder,
-  Schedule,
-  Chat,
+  School as SchoolIcon,
+  Group as GroupIcon,
+  TrendingUp as TrendingUpIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
-
-const features = [
-  {
-    icon: <School sx={{ fontSize: 40 }} />,
-    title: 'Share Your Knowledge',
-    description: 'Teach others in your area of expertise and earn credits.',
-  },
-  {
-    icon: <Psychology sx={{ fontSize: 40 }} />,
-    title: 'Learn from Experts',
-    description: 'Connect with experienced mentors in various fields.',
-  },
-  {
-    icon: <CreditScore sx={{ fontSize: 40 }} />,
-    title: 'Credit System',
-    description: 'Earn credits by teaching, spend them on learning.',
-  },
-  {
-    icon: <StarBorder sx={{ fontSize: 40 }} />,
-    title: 'Quality Assurance',
-    description: 'Rate and review your learning experience.',
-  },
-  {
-    icon: <Schedule sx={{ fontSize: 40 }} />,
-    title: 'Flexible Scheduling',
-    description: 'Book sessions that fit your schedule.',
-  },
-  {
-    icon: <Chat sx={{ fontSize: 40 }} />,
-    title: 'Real-time Interaction',
-    description: 'Connect through chat and video calls.',
-  },
-];
 
 const Home = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
 
-  // Features Section Component
-  const FeaturesSection = () => (
-    <Container maxWidth="lg" sx={{ mb: 8 }}>
-      <Typography
-        component="h2"
-        variant="h3"
-        align="center"
-        sx={{ mb: 6 }}
-      >
-        Platform Features
-      </Typography>
-      <Grid container spacing={4}>
-        {features.map((feature, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card
-              sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                p: 2,
-              }}
-              elevation={2}
-            >
-              <Box
-                sx={{
-                  bgcolor: 'primary.light',
-                  borderRadius: '50%',
-                  p: 2,
-                  mb: 2,
-                }}
-              >
-                {feature.icon}
-              </Box>
-              <CardContent>
-                <Typography
-                  gutterBottom
-                  variant="h5"
-                  component="h3"
-                  align="center"
-                >
-                  {feature.title}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  align="center"
-                >
-                  {feature.description}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
-  );
+  const features = [
+    {
+      icon: <SchoolIcon fontSize="large" sx={{ color: '#4285f4' }} />,
+      title: 'Expert Mentors',
+      description: 'Connect with experienced mentors who are passionate about sharing their knowledge.'
+    },
+    {
+      icon: <GroupIcon fontSize="large" sx={{ color: '#34a853' }} />,
+      title: 'Interactive Sessions',
+      description: 'Engage in real-time video sessions with screen sharing and collaborative tools.'
+    },
+    {
+      icon: <TrendingUpIcon fontSize="large" sx={{ color: '#fbbc05' }} />,
+      title: 'Skill Growth',
+      description: 'Learn at your own pace and track your progress with personalized feedback.'
+    },
+    {
+      icon: <SecurityIcon fontSize="large" sx={{ color: '#ea4335' }} />,
+      title: 'Secure Platform',
+      description: 'Your learning experience is protected with enterprise-grade security.'
+    }
+  ];
 
   return (
-    <Box>
-      {/* Hero Section */}
-      <Box
-        sx={{
-          bgcolor: 'primary.main',
-          color: 'white',
-          py: 8,
-          mb: 6,
-          borderRadius: 2,
+    <Container maxWidth="lg">
+      <Box 
+        sx={{ 
+          textAlign: 'center', 
+          pt: { xs: 8, sm: 10 },
+          pb: { xs: 8, sm: 12 }
         }}
       >
-        <Container maxWidth="md">
-          <Typography
-            component="h1"
-            variant="h2"
-            align="center"
-            gutterBottom
-            sx={{ fontWeight: 'bold' }}
+        <Typography
+          variant="h2"
+          component="h1"
+          gutterBottom
+          sx={{
+            fontWeight: 500,
+            fontSize: { xs: '3rem', sm: '4rem', md: '5rem' },
+            background: 'linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent',
+            mb: 3
+          }}
+        >
+          SwapExpertise
+        </Typography>
+        <Typography
+          variant="h5"
+          color="text.secondary"
+          sx={{ mb: 4, maxWidth: '800px', mx: 'auto' }}
+        >
+          Connect with mentors, share knowledge, and grow together in a collaborative learning environment
+        </Typography>
+
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
+          justifyContent="center"
+          sx={{ mb: 8 }}
+        >
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate('/register')}
+            sx={{
+              bgcolor: '#1a73e8',
+              '&:hover': { bgcolor: '#1557b0' },
+              px: 4,
+              py: 1.5,
+              fontSize: '1.1rem'
+            }}
           >
-            Share Knowledge, Grow Together
-          </Typography>
-          <Typography variant="h5" align="center" paragraph>
-            A platform where you can exchange your expertise with others.
-            Teach what you know, learn what you want.
-          </Typography>
-          <Stack
-            direction="row"
-            spacing={2}
-            justifyContent="center"
-            sx={{ mt: 4 }}
+            Get Started
+          </Button>
+          <Button
+            variant="outlined"
+            size="large"
+            onClick={() => navigate('/login')}
+            sx={{
+              borderColor: '#1a73e8',
+              color: '#1a73e8',
+              '&:hover': {
+                borderColor: '#1557b0',
+                bgcolor: 'rgba(26, 115, 232, 0.04)'
+              },
+              px: 4,
+              py: 1.5,
+              fontSize: '1.1rem'
+            }}
           >
-            {loading ? (
-              <CircularProgress />
-            ) : !user ? (
-              <>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  size="large"
-                  onClick={() => navigate('/register')}
-                >
-                  Get Started
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  size="large"
-                  onClick={() => navigate('/login')}
-                >
-                  Sign In
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="contained"
-                color="secondary"
-                size="large"
-                onClick={() => navigate('/search')}
+            Sign In
+          </Button>
+        </Stack>
+
+        {/* Features Section */}
+        <Grid container spacing={4}>
+          {features.map((feature, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Card
+                elevation={0}
+                sx={{
+                  height: '100%',
+                  bgcolor: 'transparent',
+                  transition: 'transform 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)'
+                  }
+                }}
               >
-                Find Mentors
-              </Button>
-            )}
-          </Stack>
-        </Container>
+                <CardContent sx={{ textAlign: 'center', p: 3 }}>
+                  <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                    {feature.icon}
+                  </Box>
+                  <Typography variant="h6" gutterBottom>
+                    {feature.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {feature.description}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       </Box>
-
-      {/* Features Section - Always visible */}
-      <FeaturesSection />
-
-      {/* Call to Action - Only show if not logged in */}
-      {!loading && !user && (
-        <Box sx={{ bgcolor: 'secondary.light', py: 8 }}>
-          <Container maxWidth="md">
-            <Typography
-              variant="h4"
-              align="center"
-              color="text.primary"
-              gutterBottom
-            >
-              Ready to Start Learning?
-            </Typography>
-            <Typography
-              variant="h6"
-              align="center"
-              color="text.secondary"
-              paragraph
-            >
-              Join our community of learners and experts today.
-              Share your knowledge and learn from others.
-            </Typography>
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={() => navigate('/register')}
-              >
-                Join Now
-              </Button>
-            </Box>
-          </Container>
-        </Box>
-      )}
-    </Box>
+    </Container>
   );
 };
 
