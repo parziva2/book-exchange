@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 import MentorRoute from './components/auth/MentorRoute';
@@ -23,15 +23,21 @@ import Messages from './pages/Messages';
 import JoinSession from './pages/JoinSession';
 import ErrorPage from './pages/ErrorPage';
 import GroupSessionList from './components/group-sessions/GroupSessionList';
-import GroupSessionDetails from './components/group-sessions/GroupSessionDetails';
-import GroupSessionForm from './components/group-sessions/GroupSessionForm';
-import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
-import Help from './pages/Help';
-import { NotificationProvider } from './contexts/NotificationContext';
-import Notifications from './pages/Notifications';
+import { initGA, trackPageView } from './utils/analytics';
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Initialize Google Analytics
+    initGA();
+  }, []);
+
+  useEffect(() => {
+    // Track page view on route change
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+
   return (
     <Routes>
       <Route element={<Layout />}>
