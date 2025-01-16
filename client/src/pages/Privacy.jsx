@@ -3,67 +3,67 @@ import { Container, Typography, Paper, Box } from '@mui/material';
 
 const Privacy = () => {
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
+    <Container maxWidth="md">
+      <Paper elevation={3} sx={{ p: 4, mt: 4, mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
           Privacy Policy
         </Typography>
         
-        <Box sx={{ mt: 4 }}>
+        <Box mb={3}>
           <Typography variant="h6" gutterBottom>
             1. Information We Collect
           </Typography>
           <Typography paragraph>
-            We collect information you provide directly to us, including name, email, profile information, and payment details. We also collect data about your usage of our platform and technical information about your device.
+            We collect information that you provide directly to us, including when you create an account,
+            update your profile, or communicate with other users. This may include your name, email address,
+            profile picture, and other information you choose to provide.
           </Typography>
+        </Box>
 
+        <Box mb={3}>
           <Typography variant="h6" gutterBottom>
             2. How We Use Your Information
           </Typography>
           <Typography paragraph>
-            We use your information to provide our services, process payments, communicate with you, improve our platform, and ensure security. We may also use your data to personalize your experience and analyze platform usage.
+            We use the information we collect to provide, maintain, and improve our services, communicate
+            with you, and protect our users. This includes personalizing your experience, processing
+            transactions, and sending you updates about our services.
           </Typography>
+        </Box>
 
+        <Box mb={3}>
           <Typography variant="h6" gutterBottom>
             3. Information Sharing
           </Typography>
           <Typography paragraph>
-            We do not sell your personal information. We share your information only with service providers who assist in operating our platform, or when required by law. Mentors only receive information necessary for conducting sessions.
+            We do not sell your personal information. We may share your information with third parties only
+            in limited circumstances, such as when required by law or with your consent.
           </Typography>
+        </Box>
 
+        <Box mb={3}>
           <Typography variant="h6" gutterBottom>
-            4. Data Security
+            4. Security
           </Typography>
           <Typography paragraph>
-            We implement appropriate technical and organizational measures to protect your personal information. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.
+            We take reasonable measures to help protect your personal information from loss, theft, misuse,
+            unauthorized access, disclosure, alteration, and destruction.
           </Typography>
+        </Box>
 
+        <Box mb={3}>
           <Typography variant="h6" gutterBottom>
             5. Your Rights
           </Typography>
           <Typography paragraph>
-            You have the right to access, correct, or delete your personal information. You can also request a copy of your data or object to its processing. Contact us to exercise these rights.
+            You have the right to access, correct, or delete your personal information. You can also object
+            to or restrict certain processing of your information.
           </Typography>
+        </Box>
 
-          <Typography variant="h6" gutterBottom>
-            6. Cookies and Tracking
-          </Typography>
-          <Typography paragraph>
-            We use cookies and similar technologies to enhance your experience, analyze usage, and assist in our marketing efforts. You can control cookie preferences through your browser settings.
-          </Typography>
-
-          <Typography variant="h6" gutterBottom>
-            7. Changes to Privacy Policy
-          </Typography>
-          <Typography paragraph>
-            We may update this privacy policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the effective date.
-          </Typography>
-
-          <Typography variant="h6" gutterBottom>
-            8. Contact Us
-          </Typography>
-          <Typography paragraph>
-            If you have any questions about this privacy policy or our practices, please contact us at privacy@swapexpertise.com
+        <Box>
+          <Typography variant="body2" color="text.secondary">
+            Last updated: {new Date().toLocaleDateString()}
           </Typography>
         </Box>
       </Paper>
