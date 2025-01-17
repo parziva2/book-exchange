@@ -23,6 +23,12 @@ import Messages from './pages/Messages';
 import JoinSession from './pages/JoinSession';
 import ErrorPage from './pages/ErrorPage';
 import GroupSessionList from './components/group-sessions/GroupSessionList';
+import GroupSessionDetails from './components/group-sessions/GroupSessionDetails';
+import GroupSessionForm from './components/group-sessions/GroupSessionForm';
+import Privacy from './pages/Privacy.jsx';
+import Terms from './pages/Terms.jsx';
+import Help from './pages/Help.jsx';
+import Notifications from './pages/Notifications';
 import { initGA, trackPageView } from './utils/analytics';
 
 function App() {
@@ -62,7 +68,7 @@ function App() {
           <Route path="/video-session/:sessionId" element={<JoinSession />} />
           <Route path="/group-sessions" element={<GroupSessionList />} />
           <Route path="/group-sessions/:id" element={<GroupSessionDetails />} />
-          <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
 
         {/* Mentor Routes */}
