@@ -4,10 +4,10 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // List of public routes that don't require authentication
 const publicRoutes = [
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/refresh-token',
-  '/api/auth/me'
+  '/auth/login',
+  '/auth/register',
+  '/auth/refresh-token',
+  '/auth/me'
 ];
 
 // Maximum number of retries for failed requests
