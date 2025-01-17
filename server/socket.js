@@ -17,7 +17,7 @@ const initializeSocket = (server) => {
           'https://www.swapexpertise.com',
           'https://swapexpertise.com',
           'https://book-exchange-clien.onrender.com',
-          'https://book-exchange.onrender.com'
+          'https://book-exchange-6sfw.onrender.com'
         ];
         
         // Allow requests with no origin (like mobile apps or curl requests)
