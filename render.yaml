@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: swapexpertise-backend
+    name: book-exchange-api
     env: node
     rootDirectory: server
     buildCommand: npm install
@@ -14,10 +14,10 @@ services:
         sync: false
 
   - type: static
-    name: swapexpertise-frontend
+    name: book-exchange-client
     rootDirectory: client
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://swapexpertise-backend.onrender.com/api 
+        value: https://book-exchange-api.onrender.com/api 
