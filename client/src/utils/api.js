@@ -93,7 +93,7 @@ const createApi = () => {
             throw new Error('No refresh token available');
           }
 
-          const response = await instance.post('/auth/refresh-token', { refreshToken });
+          const response = await instance.post('/api/auth/refresh-token', { refreshToken });
           const { accessToken, refreshToken: newRefreshToken } = response.data.data;
           
           if (accessToken) {
