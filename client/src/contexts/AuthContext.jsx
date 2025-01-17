@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await api.get('/auth/me');
+        const response = await api.get('/api/auth/me');
         const userData = response.data.data.user;
         setUser(userData);
         setIsAuthenticated(true);
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
           const refreshToken = localStorage.getItem('refreshToken');
           if (refreshToken) {
             try {
-              const refreshResponse = await api.post('/auth/refresh-token', { refreshToken });
+              const refreshResponse = await api.post('/api/auth/refresh-token', { refreshToken });
               const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data.tokens;
               
               // Update tokens
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
               localStorage.setItem('refreshToken', newRefreshToken);
               
               // Retry the original request
-              const retryResponse = await api.get('/auth/me');
+              const retryResponse = await api.get('/api/auth/me');
               const userData = retryResponse.data.data.user;
               setUser(userData);
               setIsAuthenticated(true);
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     setLoading(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email, password });
       const { user: userData, tokens } = response.data.data;
       
       localStorage.setItem('accessToken', tokens.accessToken);
@@ -117,7 +117,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     setLoading(true);
     try {
-      const response = await api.post('/auth/register', userData);
+      const response = await api.post('/api/auth/register', userData);
       const { user: registeredUser, tokens } = response.data.data;
       
       localStorage.setItem('accessToken', tokens.accessToken);
