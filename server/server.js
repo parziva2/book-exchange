@@ -65,7 +65,7 @@ app.use(cors({
       'https://www.swapexpertise.com',
       'https://swapexpertise.com',
       'https://book-exchange-clien.onrender.com',
-      'https://book-exchange-api.onrender.com'
+      'https://book-exchange.onrender.com'
     ];
     
     // Allow requests with no origin (like mobile apps or curl requests)
