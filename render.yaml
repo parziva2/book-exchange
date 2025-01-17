@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: book-exchange-api
+    name: book-exchange
     env: node
     rootDirectory: server
     buildCommand: npm install
@@ -20,4 +20,4 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://book-exchange-api.onrender.com/api 
+        value: https://book-exchange.onrender.com/api 
