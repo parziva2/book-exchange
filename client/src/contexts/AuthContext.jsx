@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const response = await api.get('/api/auth/me');
+        const response = await api.get('/auth/me');
         const userData = response.data.data.user;
         setUser(userData);
         setIsAuthenticated(true);
@@ -45,15 +45,15 @@ export const AuthProvider = ({ children }) => {
           const refreshToken = localStorage.getItem('refreshToken');
           if (refreshToken) {
             try {
-              const refreshResponse = await api.post('/api/auth/refresh-token', { refreshToken });
-              const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data.tokens;
+              const refreshResponse = await api.post('/auth/refresh-token', { refreshToken });
+              const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data.data;
               
               // Update tokens
               localStorage.setItem('accessToken', accessToken);
               localStorage.setItem('refreshToken', newRefreshToken);
               
               // Retry the original request
-              const retryResponse = await api.get('/api/auth/me');
+              const retryResponse = await api.get('/auth/me');
               const userData = retryResponse.data.data.user;
               setUser(userData);
               setIsAuthenticated(true);
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     setLoading(true);
     try {
-      const response = await api.post('/api/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password });
       const { user: userData, tokens } = response.data.data;
       
       localStorage.setItem('accessToken', tokens.accessToken);
@@ -105,9 +105,10 @@ export const AuthProvider = ({ children }) => {
       
       return userData;
     } catch (err) {
+      console.error('Login error:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Failed to login';
       setError(errorMessage);
-      throw err;
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -117,7 +118,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     setLoading(true);
     try {
-      const response = await api.post('/api/auth/register', userData);
+      const response = await api.post('/auth/register', userData);
       const { user: registeredUser, tokens } = response.data.data;
       
       localStorage.setItem('accessToken', tokens.accessToken);
@@ -129,9 +130,10 @@ export const AuthProvider = ({ children }) => {
       
       return registeredUser;
     } catch (err) {
+      console.error('Registration error:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Failed to register';
       setError(errorMessage);
-      throw err;
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -22,9 +22,14 @@ api.interceptors.response.use(
           throw new Error('No refresh token available');
         }
 
-        // Try to refresh the token
-        const response = await axios.post('/api/auth/refresh-token', { refreshToken });
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
+        // Try to refresh the token using the configured api instance
+        const response = await api.post('/auth/refresh-token', { refreshToken });
+        
+        if (!response.data?.data?.accessToken) {
+          throw new Error('Invalid token refresh response');
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
         // Update tokens in localStorage
         localStorage.setItem('accessToken', accessToken);
@@ -63,40 +68,40 @@ api.interceptors.request.use(
 
 // Public routes
 export const publicRoutes = {
-  login: '/api/auth/login',
-  register: '/api/auth/register',
-  verifyEmail: '/api/auth/verify-email',
-  forgotPassword: '/api/auth/forgot-password',
-  resetPassword: '/api/auth/reset-password',
+  login: '/auth/login',
+  register: '/auth/register',
+  verifyEmail: '/auth/verify-email',
+  forgotPassword: '/auth/forgot-password',
+  resetPassword: '/auth/reset-password',
 };
 
 // Protected routes
 export const protectedRoutes = {
-  me: '/api/auth/me',
-  updateProfile: '/api/users/profile',
-  changePassword: '/api/users/change-password',
-  mentors: '/api/mentors',
-  mentor: (id) => `/api/mentors/${id}`,
-  becomeMentor: '/api/mentors/become',
-  updateMentorProfile: '/api/mentors/profile',
-  conversations: '/api/conversations',
-  conversation: (id) => `/api/conversations/${id}`,
-  messages: (conversationId) => `/api/conversations/${conversationId}/messages`,
-  notifications: '/api/notifications',
-  notificationRead: (id) => `/api/notifications/${id}/read`,
-  notificationReadAll: '/api/notifications/read-all',
-  notificationDelete: (id) => `/api/notifications/${id}`,
-  reviews: (mentorId) => `/api/mentors/${mentorId}/reviews`,
-  review: (mentorId, reviewId) => `/api/mentors/${mentorId}/reviews/${reviewId}`,
-  bookings: '/api/bookings',
-  booking: (id) => `/api/bookings/${id}`,
-  bookingAccept: (id) => `/api/bookings/${id}/accept`,
-  bookingReject: (id) => `/api/bookings/${id}/reject`,
-  bookingCancel: (id) => `/api/bookings/${id}/cancel`,
-  bookingComplete: (id) => `/api/bookings/${id}/complete`,
-  createStripeSession: '/api/payments/create-session',
-  stripeAccountLink: '/api/payments/account-link',
-  stripeAccountStatus: '/api/payments/account-status',
+  me: '/auth/me',
+  updateProfile: '/users/profile',
+  changePassword: '/users/change-password',
+  mentors: '/mentors',
+  mentor: (id) => `/mentors/${id}`,
+  becomeMentor: '/mentors/become',
+  updateMentorProfile: '/mentors/profile',
+  conversations: '/conversations',
+  conversation: (id) => `/conversations/${id}`,
+  messages: (conversationId) => `/conversations/${conversationId}/messages`,
+  notifications: '/notifications',
+  notificationRead: (id) => `/notifications/${id}/read`,
+  notificationReadAll: '/notifications/read-all',
+  notificationDelete: (id) => `/notifications/${id}`,
+  reviews: (mentorId) => `/mentors/${mentorId}/reviews`,
+  review: (mentorId, reviewId) => `/mentors/${mentorId}/reviews/${reviewId}`,
+  bookings: '/bookings',
+  booking: (id) => `/bookings/${id}`,
+  bookingAccept: (id) => `/bookings/${id}/accept`,
+  bookingReject: (id) => `/bookings/${id}/reject`,
+  bookingCancel: (id) => `/bookings/${id}/cancel`,
+  bookingComplete: (id) => `/bookings/${id}/complete`,
+  createStripeSession: '/payments/create-session',
+  stripeAccountLink: '/payments/account-link',
+  stripeAccountStatus: '/payments/account-status',
 };
 
 export default api; 
