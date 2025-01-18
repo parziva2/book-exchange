@@ -40,7 +40,12 @@ const Explore = () => {
       console.log('Fetching mentors from:', url);
 
       const response = await api.get(url);
-      setMentors(response.data.mentors);
+      
+      // Handle different response structures
+      const mentorsData = response.data?.mentors || response.data || [];
+      console.log('Mentors data:', mentorsData);
+      
+      setMentors(Array.isArray(mentorsData) ? mentorsData : []);
     } catch (err) {
       console.error('Error fetching mentors:', err);
       setError('Failed to load mentors. Please try again.');
@@ -51,7 +56,7 @@ const Explore = () => {
   }, [searchQuery, filters, showNotification]);
 
   useEffect(() => {
-      fetchMentors();
+    fetchMentors();
   }, [fetchMentors]);
 
   const handleSearch = (query) => {
@@ -84,6 +89,8 @@ const Explore = () => {
     );
   }
 
+  const mentorsList = Array.isArray(mentors) ? mentors : [];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -106,13 +113,13 @@ const Explore = () => {
         <FilterBar filters={filters} onFilterChange={handleFilterChange} />
       </div>
 
-      {mentors.length === 0 ? (
+      {mentorsList.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-600">No mentors found matching your criteria.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mentors.map((mentor) => (
+          {mentorsList.map((mentor) => (
             <MentorCard key={mentor._id} mentor={mentor} />
           ))}
         </div>
