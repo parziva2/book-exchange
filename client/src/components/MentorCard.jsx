@@ -1,135 +1,61 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Box,
-  Typography,
-  Avatar,
-  Rating,
-  Chip,
-  Stack,
-} from '@mui/material';
-import { AccessTime as AccessTimeIcon, AttachMoney as AttachMoneyIcon } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 
 const MentorCard = ({ mentor }) => {
-  const navigate = useNavigate();
-
-  const getAvatarUrl = (avatarPath) => {
-    if (!avatarPath) return undefined;
-    if (avatarPath.startsWith('http')) return avatarPath;
-    const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api$/, '');
-    return `${baseUrl}${avatarPath}`;
-  };
+  const {
+    _id,
+    firstName,
+    lastName,
+    expertise,
+    bio,
+    hourlyRate,
+    rating,
+    totalReviews,
+    avatarUrl
+  } = mentor;
 
   return (
-    <Card 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 4,
-        },
-      }}
-    >
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
-          <Avatar
-            src={getAvatarUrl(mentor.avatar)}
-            sx={{ 
-              width: 100, 
-              height: 100, 
-              mb: 2,
-              bgcolor: 'primary.main',
-              fontSize: '2rem',
-            }}
-          >
-            {mentor.firstName?.[0]}
-          </Avatar>
-          <Typography variant="h6" component="div" gutterBottom align="center">
-            {mentor.firstName} {mentor.lastName}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Rating 
-              value={mentor.mentorInfo?.rating || 0} 
-              precision={0.5} 
-              readOnly 
-              size="small" 
-              sx={{ mr: 1 }}
-            />
-            <Typography variant="body2" color="text.secondary">
-              ({mentor.mentorInfo?.reviewCount || 0} {mentor.mentorInfo?.reviewCount === 1 ? 'review' : 'reviews'})
-            </Typography>
-          </Box>
-        </Box>
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+      <div className="p-6">
+        <div className="flex items-center mb-4">
+          <img
+            src={avatarUrl || '/default-avatar.png'}
+            alt={`${firstName} ${lastName}`}
+            className="w-16 h-16 rounded-full object-cover mr-4"
+          />
+          <div>
+            <h2 className="text-xl font-semibold">
+              {firstName} {lastName}
+            </h2>
+            <div className="text-sm text-gray-600 mt-1">
+              {expertise.join(', ')}
+            </div>
+          </div>
+        </div>
 
-        <Typography variant="body2" color="text.secondary" paragraph>
-          {mentor.bio?.substring(0, 120)}
-          {mentor.bio?.length > 120 ? '...' : ''}
-        </Typography>
+        <p className="text-gray-700 mb-4 line-clamp-3">{bio}</p>
 
-        <Stack spacing={1}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {mentor.expertise?.slice(0, 3).map((skill) => (
-              <Chip 
-                key={skill} 
-                label={skill} 
-                size="small"
-                sx={{ 
-                  bgcolor: 'primary.light',
-                  color: 'primary.contrastText',
-                }}
-              />
-            ))}
-            {mentor.expertise?.length > 3 && (
-              <Chip 
-                label={`+${mentor.expertise.length - 3}`} 
-                size="small"
-                sx={{ 
-                  bgcolor: 'grey.300',
-                  color: 'grey.700',
-                }}
-              />
-            )}
-          </Box>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <span className="text-yellow-400 mr-1">★</span>
+            <span className="font-medium">{rating.toFixed(1)}</span>
+            <span className="text-gray-500 text-sm ml-1">
+              ({totalReviews} reviews)
+            </span>
+          </div>
+          <div className="text-lg font-semibold text-blue-600">
+            ${hourlyRate}/hr
+          </div>
+        </div>
 
-          <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <AttachMoneyIcon fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary">
-                ${mentor.hourlyRate}/hr
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <AccessTimeIcon fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary">
-                {mentor.availability || 'Flexible'}
-              </Typography>
-            </Box>
-          </Box>
-        </Stack>
-      </CardContent>
-
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button
-          fullWidth
-          variant="contained"
-          onClick={() => navigate(`/mentor/${mentor._id}`)}
-          sx={{
-            borderRadius: 2,
-            textTransform: 'none',
-            fontWeight: 600,
-          }}
+        <Link
+          to={`/mentors/${_id}`}
+          className="block w-full text-center bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition-colors"
         >
           View Profile
-        </Button>
-      </CardActions>
-    </Card>
+        </Link>
+      </div>
+    </div>
   );
 };
 
