@@ -91,7 +91,7 @@ exports.uploadAvatar = async (req, res) => {
         }
 
         // Update user avatar path
-        user.avatar = '/uploads/avatars/' + req.file.filename;
+        user.avatar = '/api/uploads/avatars/' + req.file.filename;
         await user.save();
         console.log('User avatar updated:', user.avatar);
 

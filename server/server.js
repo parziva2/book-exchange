@@ -90,7 +90,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 // Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -124,26 +124,48 @@ if (process.env.NODE_ENV === 'production') {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
+  // Log the error with stack trace and request details
+  console.error('Error occurred:', {
+    error: err.message,
+    stack: err.stack,
+    method: req.method,
+    url: req.url,
+    body: req.body,
+    query: req.query,
+    params: req.params,
+    timestamp: new Date().toISOString()
+  });
+
+  // Don't expose error details in production
+  const message = process.env.NODE_ENV === 'production' 
+    ? 'Something went wrong!' 
+    : err.message || 'Something went wrong!';
+
+  res.status(err.status || 500).json({
     status: 'error',
-    message: err.message || 'Something went wrong!'
+    message,
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
   });
 });
 
 // 404 handler - should be after the React app handler
 app.use((req, res) => {
+  const message = `Route not found: ${req.method} ${req.url}`;
+  console.log(message);
+
   if (req.url.startsWith('/api/')) {
     res.status(404).json({
       status: 'error',
-      message: 'API route not found'
+      message: 'API route not found',
+      path: req.url
     });
   } else if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   } else {
     res.status(404).json({
       status: 'error',
-      message: 'Route not found'
+      message,
+      path: req.url
     });
   }
 });
