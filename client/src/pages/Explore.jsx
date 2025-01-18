@@ -33,16 +33,21 @@ const Explore = () => {
       if (searchQuery) params.append('search', searchQuery);
       if (filters.expertise) params.append('expertise', filters.expertise);
       if (filters.availability) params.append('availability', filters.availability);
-      if (filters.priceRange) params.append('priceRange', filters.priceRange);
-      if (filters.rating) params.append('rating', filters.rating);
+      if (filters.priceRange) {
+        const [min, max] = filters.priceRange.split('-');
+        if (min) params.append('minPrice', min);
+        if (max) params.append('maxPrice', max === '+' ? '1000' : max);
+      }
+      if (filters.rating) params.append('minRating', filters.rating);
 
       const url = `${protectedRoutes.mentors}?${params.toString()}`;
       console.log('Fetching mentors from:', url);
 
       const response = await api.get(url);
+      console.log('API Response:', response.data);
       
-      // Handle different response structures
-      const mentorsData = response.data?.mentors || response.data || [];
+      // Handle the response structure
+      const mentorsData = response.data?.data?.mentors || [];
       console.log('Mentors data:', mentorsData);
       
       setMentors(Array.isArray(mentorsData) ? mentorsData : []);

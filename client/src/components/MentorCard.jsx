@@ -10,8 +10,8 @@ const MentorCard = ({ mentor }) => {
     bio = '',
     hourlyRate = 0,
     rating = 0,
-    totalReviews = 0,
-    avatarUrl = ''
+    reviewCount = 0,
+    avatar = ''
   } = mentor || {};
 
   if (!mentor || !_id) {
@@ -23,7 +23,7 @@ const MentorCard = ({ mentor }) => {
       <div className="p-6">
         <div className="flex items-center mb-4">
           <img
-            src={avatarUrl || '/default-avatar.png'}
+            src={avatar || '/default-avatar.png'}
             alt={`${firstName} ${lastName}`}
             className="w-16 h-16 rounded-full object-cover mr-4"
             onError={(e) => {
@@ -48,7 +48,7 @@ const MentorCard = ({ mentor }) => {
             <span className="text-yellow-400 mr-1">★</span>
             <span className="font-medium">{Number(rating).toFixed(1)}</span>
             <span className="text-gray-500 text-sm ml-1">
-              ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
+              ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
             </span>
           </div>
           <div className="text-lg font-semibold text-blue-600">
