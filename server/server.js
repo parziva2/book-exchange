@@ -97,7 +97,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/mentors', mentorRoutes);
@@ -108,6 +108,20 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// Serve static files from the React app
+if (process.env.NODE_ENV === 'production') {
+  // Serve any static files
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+
+  // Handle React routing, return all requests to React app
+  app.get('*', function(req, res) {
+    // Skip API routes
+    if (!req.url.startsWith('/api/')) {
+      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    }
+  });
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -117,12 +131,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// 404 handler - should be after the React app handler
 app.use((req, res) => {
-  res.status(404).json({
-    status: 'error',
-    message: 'Route not found'
-  });
+  if (req.url.startsWith('/api/')) {
+    res.status(404).json({
+      status: 'error',
+      message: 'API route not found'
+    });
+  } else if (process.env.NODE_ENV === 'production') {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  } else {
+    res.status(404).json({
+      status: 'error',
+      message: 'Route not found'
+    });
+  }
 });
 
 // Start the server
