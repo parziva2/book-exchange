@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketContext';
-import api from '../utils/api';
+import api, { protectedRoutes } from '../utils/api';
 
 const NotificationContext = createContext();
 
@@ -50,7 +50,7 @@ export const NotificationProvider = ({ children }) => {
     
     try {
       setLoading(true);
-      const response = await api.get('/notifications');
+      const response = await api.get(protectedRoutes.notifications);
       setNotifications(response.data.notifications);
       setUnreadCount(response.data.notifications.filter(n => !n.read).length);
       setError(null);
@@ -65,7 +65,7 @@ export const NotificationProvider = ({ children }) => {
   // Mark a notification as read
   const markAsRead = useCallback(async (notificationId) => {
     try {
-      await api.put(`/notifications/${notificationId}/read`);
+      await api.put(protectedRoutes.notificationRead(notificationId));
       setNotifications(prev => 
         prev.map(notification => 
           notification._id === notificationId 
@@ -83,7 +83,7 @@ export const NotificationProvider = ({ children }) => {
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
     try {
-      await api.put('/notifications/read-all');
+      await api.put(protectedRoutes.notificationReadAll);
       setNotifications(prev => 
         prev.map(notification => ({ ...notification, read: true }))
       );
@@ -97,7 +97,7 @@ export const NotificationProvider = ({ children }) => {
   // Delete a notification
   const deleteNotification = useCallback(async (notificationId) => {
     try {
-      await api.delete(`/notifications/${notificationId}`);
+      await api.delete(protectedRoutes.notificationDelete(notificationId));
       setNotifications(prev => 
         prev.filter(notification => notification._id !== notificationId)
       );

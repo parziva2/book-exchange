@@ -1,130 +1,102 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  withCredentials: true,
+});
 
-// List of public routes that don't require authentication
-const publicRoutes = [
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/refresh-token',
-  '/api/auth/me'
-];
+// Add request interceptor to handle token refresh
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-// Maximum number of retries for failed requests
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
+    // If the error is 401 and we haven't already tried to refresh the token
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-// Create API instance with error handling
-const createApi = () => {
-  console.log('Initializing API with base URL:', BASE_URL);
-  
-  const instance = axios.create({
-    baseURL: BASE_URL,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    withCredentials: true,
-    timeout: 10000
-  });
-
-  // Request interceptor
-  instance.interceptors.request.use(
-    (config) => {
-      console.log('Making request to:', `${config.baseURL}${config.url}`);
-      
-      // Add cache busting parameter to GET requests
-      if (config.method === 'get') {
-        config.params = {
-          ...config.params,
-          _t: Date.now()
-        };
-      }
-      
-      // Add retry count to config
-      config.retryCount = config.retryCount || 0;
-      
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      console.error('Request error:', error);
-      return Promise.reject(error);
-    }
-  );
-
-  // Response interceptor
-  instance.interceptors.response.use(
-    (response) => {
-      console.log('Response received:', response.data);
-      return response;
-    },
-    async (error) => {
-      const originalRequest = error.config;
-
-      // Handle network errors with retry logic
-      if (!error.response) {
-        console.error('Network error:', error);
-        
-        // Retry the request if we haven't reached the maximum retries
-        if (originalRequest.retryCount < MAX_RETRIES) {
-          originalRequest.retryCount += 1;
-          
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * originalRequest.retryCount));
-          
-          console.log(`Retrying request (${originalRequest.retryCount}/${MAX_RETRIES})...`);
-          return instance(originalRequest);
+      try {
+        // Get refresh token from localStorage
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
         }
-        
-        return Promise.reject(new Error('Network error. Please check your connection.'));
+
+        // Try to refresh the token
+        const response = await axios.post('/api/auth/refresh-token', { refreshToken });
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+        // Update tokens in localStorage
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+
+        // Update the authorization header
+        originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+
+        // Retry the original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        // If refresh fails, clear tokens and throw error
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        throw refreshError;
       }
-
-      // Handle token refresh
-      if (error.response.status === 401 && !publicRoutes.includes(originalRequest.url) && !originalRequest._retry) {
-        originalRequest._retry = true;
-
-        try {
-          const refreshToken = localStorage.getItem('refreshToken');
-          if (!refreshToken) {
-            throw new Error('No refresh token available');
-          }
-
-          const response = await instance.post('/api/auth/refresh-token', { refreshToken });
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-          
-          if (accessToken) {
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', newRefreshToken);
-            
-            // Update the Authorization header for all subsequent requests
-            instance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-            
-            // Update the failed request's Authorization header
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            
-            // Retry the original request
-            return instance(originalRequest);
-          }
-        } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError);
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
-          return Promise.reject(refreshError);
-        }
-      }
-
-      return Promise.reject(error);
     }
-  );
 
-  return instance;
+    return Promise.reject(error);
+  }
+);
+
+// Add request interceptor to add authorization header
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Public routes
+export const publicRoutes = {
+  login: '/api/auth/login',
+  register: '/api/auth/register',
+  verifyEmail: '/api/auth/verify-email',
+  forgotPassword: '/api/auth/forgot-password',
+  resetPassword: '/api/auth/reset-password',
 };
 
-// Create and export the API instance
-const api = createApi();
+// Protected routes
+export const protectedRoutes = {
+  me: '/api/auth/me',
+  updateProfile: '/api/users/profile',
+  changePassword: '/api/users/change-password',
+  mentors: '/api/mentors',
+  mentor: (id) => `/api/mentors/${id}`,
+  becomeMentor: '/api/mentors/become',
+  updateMentorProfile: '/api/mentors/profile',
+  conversations: '/api/conversations',
+  conversation: (id) => `/api/conversations/${id}`,
+  messages: (conversationId) => `/api/conversations/${conversationId}/messages`,
+  notifications: '/api/notifications',
+  notificationRead: (id) => `/api/notifications/${id}/read`,
+  notificationReadAll: '/api/notifications/read-all',
+  notificationDelete: (id) => `/api/notifications/${id}`,
+  reviews: (mentorId) => `/api/mentors/${mentorId}/reviews`,
+  review: (mentorId, reviewId) => `/api/mentors/${mentorId}/reviews/${reviewId}`,
+  bookings: '/api/bookings',
+  booking: (id) => `/api/bookings/${id}`,
+  bookingAccept: (id) => `/api/bookings/${id}/accept`,
+  bookingReject: (id) => `/api/bookings/${id}/reject`,
+  bookingCancel: (id) => `/api/bookings/${id}/cancel`,
+  bookingComplete: (id) => `/api/bookings/${id}/complete`,
+  createStripeSession: '/api/payments/create-session',
+  stripeAccountLink: '/api/payments/account-link',
+  stripeAccountStatus: '/api/payments/account-status',
+};
+
 export default api; 
