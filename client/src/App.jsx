@@ -9,7 +9,7 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import Profile from '@/pages/Profile';
 import Dashboard from '@/pages/Dashboard';
-import Explore from '@/pages/Explore';
+import Mentors from '@/pages/Mentors';
 import BecomeMentor from '@/pages/BecomeMentor';
 import AdminDashboard from '@/pages/Admin/AdminDashboard';
 import UserManagement from '@/pages/Admin/UserManagement';
@@ -58,7 +58,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={<PrivateRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/explore" element={<Explore />} />
+          <Route path="/explore" element={<Mentors />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/become-mentor" element={<BecomeMentor />} />
           <Route path="/sessions" element={<Sessions />} />
