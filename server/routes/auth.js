@@ -82,10 +82,12 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt for email:', email);
 
     // Check if user exists
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({
         status: 'error',
         message: 'Invalid credentials'
@@ -93,8 +95,10 @@ router.post('/login', async (req, res) => {
     }
 
     // Check password
+    console.log('Checking password for user:', user._id);
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
+      console.log('Password mismatch for user:', user._id);
       return res.status(401).json({
         status: 'error',
         message: 'Invalid credentials'
@@ -103,6 +107,7 @@ router.post('/login', async (req, res) => {
 
     // Check if user is blocked
     if (user.blocked) {
+      console.log('Blocked user attempted to login:', user._id);
       return res.status(403).json({
         status: 'error',
         message: 'Your account has been blocked'
@@ -110,6 +115,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Create tokens
+    console.log('Creating tokens for user:', user._id);
     const accessToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
@@ -126,6 +132,7 @@ router.post('/login', async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false }); // Skip validation
 
+    console.log('Login successful for user:', user._id);
     res.json({
       status: 'success',
       data: {
@@ -198,6 +205,7 @@ router.post('/refresh-token', async (req, res) => {
     const { refreshToken } = req.body;
     
     if (!refreshToken) {
+      console.log('Refresh token missing in request');
       return res.status(401).json({
         status: 'error',
         message: 'Refresh token required'
@@ -205,14 +213,40 @@ router.post('/refresh-token', async (req, res) => {
     }
 
     // Verify refresh token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
-    
-    // Find user and check if refresh token matches
-    const user = await User.findById(decoded.userId);
-    if (!user || user.refreshToken !== refreshToken) {
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    } catch (jwtError) {
+      console.log('JWT verification failed:', jwtError.message);
       return res.status(401).json({
         status: 'error',
         message: 'Invalid refresh token'
+      });
+    }
+    
+    // Find user and check if refresh token matches
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      console.log('User not found for refresh token');
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid refresh token'
+      });
+    }
+
+    if (user.refreshToken !== refreshToken) {
+      console.log('Stored refresh token does not match provided token');
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid refresh token'
+      });
+    }
+
+    if (user.blocked) {
+      console.log('Blocked user attempted to refresh token');
+      return res.status(403).json({
+        status: 'error',
+        message: 'Your account has been blocked'
       });
     }
 
@@ -233,6 +267,7 @@ router.post('/refresh-token', async (req, res) => {
     user.refreshToken = newRefreshToken;
     await user.save();
 
+    console.log('Token refresh successful for user:', user._id);
     res.json({
       status: 'success',
       data: {
