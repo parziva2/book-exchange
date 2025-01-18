@@ -74,22 +74,12 @@ const Explore = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <ErrorMessage message={error} />
-        <button
-          onClick={fetchMentors}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-        >
-          Try Again
-        </button>
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <LoadingSpinner />
+          </div>
+        </div>
       </div>
     );
   }
@@ -97,38 +87,65 @@ const Explore = () => {
   const mentorsList = Array.isArray(mentors) ? mentors : [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold mb-4 md:mb-0">Find a Mentor</h1>
-        {isAuthenticated && (
-          <Link
-            to="/become-mentor"
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors"
-          >
-            Become a Mentor
-          </Link>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        {/* Header Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Find a Mentor</h1>
+              <p className="mt-2 text-gray-600">Connect with experienced mentors in your field</p>
+            </div>
+            {isAuthenticated && (
+              <Link
+                to="/become-mentor"
+                className="mt-4 md:mt-0 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-sm"
+              >
+                Become a Mentor
+              </Link>
+            )}
+          </div>
+
+          {/* Search Section */}
+          <div className="mb-6">
+            <SearchBar onSearch={handleSearch} />
+          </div>
+
+          {/* Filter Section */}
+          <FilterBar filters={filters} onFilterChange={handleFilterChange} />
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-8">
+            <ErrorMessage message={error} />
+            <button
+              onClick={fetchMentors}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              Try Again
+            </button>
+          </div>
         )}
-      </div>
 
-      <div className="mb-8">
-        <SearchBar onSearch={handleSearch} />
-      </div>
-
-      <div className="mb-8">
-        <FilterBar filters={filters} onFilterChange={handleFilterChange} />
-      </div>
-
-      {mentorsList.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600">No mentors found matching your criteria.</p>
+        {/* Results Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          {mentorsList.length === 0 ? (
+            <div className="text-center py-12">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No mentors found</h3>
+              <p className="text-gray-600">
+                Try adjusting your search criteria or check back later for new mentors.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mentorsList.map((mentor) => (
+                <MentorCard key={mentor._id} mentor={mentor} />
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mentorsList.map((mentor) => (
-            <MentorCard key={mentor._id} mentor={mentor} />
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 };
