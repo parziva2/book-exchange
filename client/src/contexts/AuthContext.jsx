@@ -93,6 +93,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const response = await api.post('/auth/login', { email, password });
+      
+      if (!response.data?.data?.tokens) {
+        throw new Error('Invalid login response format');
+      }
+      
       const { user: userData, tokens } = response.data.data;
       
       localStorage.setItem('accessToken', tokens.accessToken);
@@ -106,7 +111,9 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to login';
+      const errorMessage = err.response?.status === 401
+        ? 'Invalid email or password'
+        : err.response?.data?.message || err.message || 'Failed to login';
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
